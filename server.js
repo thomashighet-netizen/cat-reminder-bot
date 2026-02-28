@@ -79,8 +79,30 @@ app.post('/webhook', (req, res) => {
 </Response>`);
 });
 
+// ─── TEST ENDPOINT ──────────────────────────────────────────────────────────
+app.get('/test', async (req, res) => {
+  await sendReminder();
+  res.send(`
+    <html>
+      <head>
+        <style>
+          body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #0f0f1a; color: white; flex-direction: column; gap: 16px; }
+          h1 { font-size: 2rem; }
+          p { color: #aaa; }
+          a { color: #a78bfa; text-decoration: none; border: 1px solid #a78bfa; padding: 10px 20px; border-radius: 8px; }
+        </style>
+      </head>
+      <body>
+        <h1>🐟 Test message sent!</h1>
+        <p>Check your WhatsApp — a reminder should arrive shortly.</p>
+        <a href="/test">Send another</a>
+      </body>
+    </html>
+  `);
+});
+
 // ─── HEALTH CHECK ───────────────────────────────────────────────────────────
-app.get('/', (req, res) => res.send('🐱 Whisker Meals bot is running!'));
+app.get('/', (req, res) => res.send('🐱 Whisker Meals bot is running! Visit <a href="/test">/test</a> to send a test WhatsApp message.'));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
