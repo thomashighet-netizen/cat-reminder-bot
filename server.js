@@ -104,5 +104,5 @@ app.get('/test', async (req, res) => {
 // ─── HEALTH CHECK ───────────────────────────────────────────────────────────
 app.get('/', (req, res) => res.send('🐱 Whisker Meals bot is running! Visit <a href="/test">/test</a> to send a test WhatsApp message.'));
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
