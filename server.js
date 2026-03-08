@@ -100,11 +100,42 @@ async function sendAllReminders() {
   await sendWebPush();
 }
 
-// ─── SCHEDULE ────────────────────────────────────────────────────────────────
-cron.schedule('0 18 * * 3', () => { console.log('📅 Wednesday!'); sendAllReminders(); }, { timezone: 'Europe/London' });
-cron.schedule('0 18 * * 0', () => { console.log('📅 Sunday!'); sendAllReminders(); }, { timezone: 'Europe/London' });
+// ─── DYNAMIC SCHEDULE ────────────────────────────────────────────────────────
+let wedHour = 18, wedMin = 0, sunHour = 18, sunMin = 0;
+let wedJob = null, sunJob = null;
 
-console.log('🐱 Whisker Meals running. Wed & Sun at 6pm.');
+function startSchedule() {
+  if (wedJob) wedJob.stop();
+  if (sunJob) sunJob.stop();
+
+  wedJob = cron.schedule(`${wedMin} ${wedHour} * * 3`, () => {
+    console.log(`📅 Wednesday reminder at ${wedHour}:${String(wedMin).padStart(2,'0')}!`);
+    sendAllReminders();
+  }, { timezone: 'Europe/London' });
+
+  sunJob = cron.schedule(`${sunMin} ${sunHour} * * 0`, () => {
+    console.log(`📅 Sunday reminder at ${sunHour}:${String(sunMin).padStart(2,'0')}!`);
+    sendAllReminders();
+  }, { timezone: 'Europe/London' });
+
+  console.log(`🕕 Schedule: Wed ${wedHour}:${String(wedMin).padStart(2,'0')}, Sun ${sunHour}:${String(sunMin).padStart(2,'0')} (Europe/London)`);
+}
+
+// Update schedule from app
+app.post('/schedule', (req, res) => {
+  const { wedTime, sunTime } = req.body;
+  if (wedTime) { const [h, m] = wedTime.split(':'); wedHour = parseInt(h); wedMin = parseInt(m); }
+  if (sunTime) { const [h, m] = sunTime.split(':'); sunHour = parseInt(h); sunMin = parseInt(m); }
+  startSchedule();
+  res.json({ ok: true, wed: `${wedHour}:${String(wedMin).padStart(2,'0')}`, sun: `${sunHour}:${String(sunMin).padStart(2,'0')}` });
+});
+
+app.get('/schedule', (req, res) => {
+  res.json({ wed: `${wedHour}:${String(wedMin).padStart(2,'0')}`, sun: `${sunHour}:${String(sunMin).padStart(2,'0')}` });
+});
+
+startSchedule();
+console.log('🐱 Whisker Meals running.');
 
 // ─── TEST ─────────────────────────────────────────────────────────────────────
 app.get('/test', async (req, res) => {
